@@ -1,35 +1,64 @@
 #ifndef JUGADOR_H
 #define JUGADOR_H
 
+#include <QObject>
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QTimer>
-#include <QPixmap>
-#include <QObject>
+#include <QVector>
 
 class Jugador : public QObject, public QGraphicsPixmapItem
 {
-    Q_OBJECT  // Necesario para señales y ranuras
+    Q_OBJECT
 
 public:
-    // Constructor del jugador
-    Jugador(QGraphicsItem* parent = nullptr);
+    explicit Jugador(QGraphicsItem *parent = nullptr);
+    void setPlataformas(const QList<QGraphicsItem*>& plataformas);
 
-    // Método para manejar eventos de teclado
-    void keyPressEvent(QKeyEvent* event);
+    // Nuevo método para detectar colisiones con plataformas
+    bool detectarColisionConPlataformas();
+    void detectarColisionConProyectil();
 
-private slots:
-    void actualizarImagen();
 
-private:
-    // Imágenes para la animación hacia la derecha e izquierda
+signals:
+    void vidasCambiadas(int vidas); // Señal para notificar cambio de vidas
+
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent* event) override;
+
+
     QVector<QPixmap> imagenesDerecha;
     QVector<QPixmap> imagenesIzquierda;
+    int indiceImagen;
+    bool avanzando;
+    bool direccionDerecha;
+    bool descendiendo;
 
-    int indiceImagen;           // Índice de la imagen actual
-    bool avanzando;             // Dirección de la animación (true = avanzar, false = retroceder)
-    bool direccionDerecha;      // Última dirección horizontal (true = derecha, false = izquierda)
-    QTimer* temporizador;       // Temporizador para cambiar las imágenes
+    // Física
+    float velocidadX;
+    float velocidadY;
+    float gravedad;
+    bool enElAire;
+    bool enColisionConPlataforma;
+    QList<QGraphicsItem*> plataformas;
+
+    // Temporizadores
+    QTimer *temporizador;
+    QTimer *temporizadorFisica;
+    int vidas;
+
+protected slots:
+    void actualizarFisica();
+    void actualizarImagen();
+
+
+
+
+
+
 };
+
 
 #endif // JUGADOR_H

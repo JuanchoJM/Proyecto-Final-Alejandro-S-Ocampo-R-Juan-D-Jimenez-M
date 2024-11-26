@@ -1,47 +1,114 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "jugador.h"
+#include "Enemigo.h"
 #include <QPixmap>
 #include <QBrush>
-#include "jugador.h"
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    , scene(new QGraphicsScene(this))       // Primera escena
-    , emptyScene(new QGraphicsScene(this))  // Nueva escena vacía
+    : QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    scene(new QGraphicsScene(this)),
+    emptyScene(new QGraphicsScene(this))
 {
     ui->setupUi(this);
 
-    // Configuración de la primera escena con imagen de fondo
+    // Tamaño de la escena y ventana
     int sceneWidth = 1280;
     int sceneHeight = 546;
+    this->resize(1280,546); // Ajustar el tamaño de la ventana
+    this->setFixedSize(1280, 546); // Fijar el tamaño para evitar cambios
+
+    // Configuración del QGraphicsView
+    ui->graphicsView->resize(sceneWidth, sceneHeight);
     scene->setSceneRect(0, 0, sceneWidth, sceneHeight);
 
-    QPixmap background("C:/Users/PC/Documents/ProyectoFinal/BobPatino_BartHalloween.jpg");
-    QPixmap scaledBackground = background.scaled(sceneWidth, sceneHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    scene->setBackgroundBrush(QBrush(scaledBackground));
-
-    // Usamos el QGraphicsView de la interfaz .ui
+    QPixmap background("C:\\Users\\PC\\Documents\\ProyectoFinal\\BobPatino_BartHalloween.jpg");
+    scene->setBackgroundBrush(QBrush(background.scaled(sceneWidth, sceneHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    // Configuración de la nueva escena vacía (blanca)
+    // Configuración de la escena vacía
     emptyScene->setSceneRect(0, 0, sceneWidth, sceneHeight);
-    emptyScene->setBackgroundBrush(Qt::white);  // Fondo blanco
+    emptyScene->setBackgroundBrush(Qt::white);
 
-    // Conectar el botón de "Start" para cambiar de escena
+    // Ocultar contraseñas en los campos
+    ui->lineEdit_2->setEchoMode(QLineEdit::Password);
+    ui->lineEdit_4->setEchoMode(QLineEdit::Password);
+
+    // Conexión de botones
     connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::startGame);
+    connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::registrarse);
 }
+
 
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete scene;  // Eliminar la escena original
-    delete emptyScene;  // Eliminar la nueva escena vacía
+    delete scene;
+    delete emptyScene;
 }
+
+void MainWindow::registrarse()
+{
+    QString usuario = ui->lineEdit->text();
+    QString contrasena = ui->lineEdit_4->text();
+
+    if (usuario.isEmpty() || contrasena.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Por favor, completa ambos campos.");
+        return;
+    }
+
+    QFile archivo("Usuario.txt");
+    if (archivo.open(QIODevice::Append | QIODevice::Text)) {
+        QTextStream out(&archivo);
+        out << usuario << " " << contrasena << "\n";
+        archivo.close();
+
+        QMessageBox::information(this, "Éxito", "Usuario registrado correctamente.");
+        ui->lineEdit->clear();
+        ui->lineEdit_4->clear();
+    } else {
+        QMessageBox::critical(this, "Error", "No se pudo abrir el archivo.");
+    }
+}
+
+bool MainWindow::verificarUsuario(const QString &usuario, const QString &contrasena)
+{
+    QFile archivo("Usuario.txt");
+    if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Error", "No se pudo abrir el archivo.");
+        return false;
+    }
+
+    QTextStream in(&archivo);
+    while (!in.atEnd()) {
+        QString linea = in.readLine();
+        QStringList partes = linea.split(" ");
+        if (partes.size() == 2 && partes[0] == usuario && partes[1] == contrasena) {
+            archivo.close();
+            return true;
+        }
+    }
+
+    archivo.close();
+    return false;
+}
+
 void MainWindow::startGame()
 {
+    QString usuario = ui->lineEdit_3->text();
+    QString contrasena = ui->lineEdit_2->text();
+
+    if (!verificarUsuario(usuario, contrasena)) {
+        QMessageBox::warning(this, "Error", "Usuario o contraseña incorrectos.");
+        return;
+    }
+
     // Eliminar los widgets de la interfaz original
     delete ui->pushButton;
     delete ui->pushButton_2;
@@ -50,24 +117,109 @@ void MainWindow::startGame()
     delete ui->label;
     delete ui->label_3;
     delete ui->label_5;
+    delete ui->label_7;
+    delete ui->label_2;
+    delete ui->lineEdit;
+    delete ui->label_6;
+    delete ui->lineEdit_4;
+    delete ui->label_4;
 
-    // Cambiar la escena del QGraphicsView a la nueva escena
     ui->graphicsView->setScene(emptyScene);
 
-    // Configurar el nuevo fondo para la escena después de presionar "Start"
-    QPixmap nuevoFondo("C:/Users/PC/Documents/ProyectoFinal/Fondo1.jpeg"); // Cambia esta ruta por la de tu imagen
-    QPixmap scaledNuevoFondo = nuevoFondo.scaled(emptyScene->width(), emptyScene->height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    emptyScene->setBackgroundBrush(QBrush(scaledNuevoFondo));
+    QPixmap nuevoFondo("C:\\Users\\PC\\Documents\\ProyectoFinal\\Fondo1");
+    emptyScene->setBackgroundBrush(QBrush(nuevoFondo.scaled(emptyScene->width(), emptyScene->height(),
+                                                            Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
 
-    // Crear y agregar el jugador a la escena
-    Jugador* jugador = new Jugador();
+    // Crear y configurar el jugador
+    Jugador *jugador = new Jugador();
     emptyScene->addItem(jugador);
 
-    // Colocar el jugador en el centro de la escena usando pixmap().width() y pixmap().height()
+    QList<QGraphicsItem*> plataformas = crearPlataformas(emptyScene);
+    jugador->setPlataformas(plataformas);
+
     jugador->setPos(emptyScene->width() / 2 - jugador->pixmap().width() / 2,
                     emptyScene->height() / 2 - jugador->pixmap().height() / 2);
-
-    // Permitir que el jugador reciba eventos de teclado
     jugador->setFlag(QGraphicsItem::ItemIsFocusable);
     jugador->setFocus();
+
+    // Crear y añadir enemigos
+    Enemigo *enemigo1 = new Enemigo();
+    enemigo1->cargarImagen("C:\\Users\\PC\\Documents\\ProyectoFinal\\Bobpatinox");
+    enemigo1->setPos(100, 100); // Posición inicial del enemigo
+    emptyScene->addItem(enemigo1);
+    enemigo1->setPlataformas(plataformas);
+
+    // Añadir imágenes en la esquina superior izquierda
+    QGraphicsPixmapItem *vidasIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/5 vidasBart.PNG"));
+    vidasIcono->setPos(160, 30); // Posición cerca de la esquina superior izquierda
+    emptyScene->addItem(vidasIcono);
+
+    QGraphicsPixmapItem *bartIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/VidaBa.png"));
+    bartIcono->setPixmap(bartIcono->pixmap().scaled(180, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation)); // Cambiar tamaño
+    bartIcono->setPos(103, 0); // A la derecha del icono de vidas
+    emptyScene->addItem(bartIcono);
+    QGraphicsPixmapItem *vidasIconoB = new QGraphicsPixmapItem(QPixmap(":/Imagenes/20 vidas.png"));
+    vidasIconoB->setPos(900, 10); // Posición cerca de la esquina superior izquierda
+    emptyScene->addItem(vidasIconoB);
+    QGraphicsPixmapItem *BobIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/Bobpatinovida.png"));
+    BobIcono->setPixmap(BobIcono->pixmap().scaled(110, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation)); // Cambiar tamaño
+    BobIcono->setPos(1140, 0); // A la derecha del icono de vidas
+    emptyScene->addItem(BobIcono);
+    connect(jugador, &Jugador::vidasCambiadas, [vidasIcono](int vidas) {
+        QString ruta = QString(":/Imagenes/%1 vidasBart.PNG").arg(vidas);
+        vidasIcono->setPixmap(QPixmap(ruta).scaled(vidasIcono->pixmap().size(),
+                                                   Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    });
+}
+
+
+
+QList<QGraphicsItem*> MainWindow::crearPlataformas(QGraphicsScene *scene)
+{
+    QList<QGraphicsItem*> plataformas;
+
+    QGraphicsRectItem *plataforma1 = new QGraphicsRectItem(100, 407, 500, 0);
+    plataforma1->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma1);
+    plataformas.append(plataforma1);
+
+    QGraphicsRectItem *plataforma2 = new QGraphicsRectItem(315, 445, 572, 0);
+    plataforma2->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma2);
+    plataformas.append(plataforma2);
+
+    QGraphicsRectItem *plataforma3 = new QGraphicsRectItem(420, 214, 70, 0);//techo
+    plataforma3->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma3);
+    plataformas.append(plataforma3);
+
+    QGraphicsRectItem *plataforma4 = new QGraphicsRectItem(100, 312, 380, 0);
+    plataforma4->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma4);
+    plataformas.append(plataforma4);
+    QGraphicsRectItem *plataforma5 = new QGraphicsRectItem(792, 312, 485, 0);
+    plataforma5->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma5);
+    plataformas.append(plataforma5);
+
+    QGraphicsRectItem *plataforma6 = new QGraphicsRectItem(970, 407, 320, 0);
+    plataforma6->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma6);
+    plataformas.append(plataforma6);
+
+    QGraphicsRectItem *plataforma7 = new QGraphicsRectItem(185, 184, 144, 0);//techo
+    plataforma7->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma7);
+    plataformas.append(plataforma7);
+
+    QGraphicsRectItem *plataforma8 = new QGraphicsRectItem(875, 135, 245, 0);//techo
+    plataforma8->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma8);
+    plataformas.append(plataforma8);
+
+    QGraphicsRectItem *plataforma9 = new QGraphicsRectItem(1150, 195, 110, 0);//techo
+    plataforma9->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma9);
+    plataformas.append(plataforma9);
+    return plataformas;
 }

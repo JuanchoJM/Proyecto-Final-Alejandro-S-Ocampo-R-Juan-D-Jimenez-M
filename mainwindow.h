@@ -3,12 +3,14 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QPushButton>
+#include <QList>
+//#include <QMediaPlayer>
+//#include <QAudioOutput>
+#include <QGraphicsRectItem>
 
-namespace Ui {
-class MainWindow;
-}
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
@@ -19,13 +21,19 @@ public:
     ~MainWindow();
 
 private slots:
-    void startGame();  // Método para cambiar la escena cuando se presiona el botón "Start"
+    void startGame();
+    void registrarse();
 
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene *scene;       // Escena inicial con imagen
-    QGraphicsScene *emptyScene;  // Nueva escena vacía (con fondo blanco)
+    QGraphicsScene *scene;        // Escena inicial
+    QGraphicsScene *emptyScene;  // Escena de juego
+    //QMediaPlayer *player;
+   // QAudioOutput *audioOutput;
+
+    // Métodos auxiliares
+    bool verificarUsuario(const QString &usuario, const QString &contrasena);
+    QList<QGraphicsItem*> crearPlataformas(QGraphicsScene *scene);
 };
 
 #endif // MAINWINDOW_H
-
