@@ -1,0 +1,42 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Imagenes1/BartD1.png</file>
+        <file>Imagenes1/BartD2.png</file>
+        <file>Imagenes1/BartD3.png</file>
+        <file>Imagenes1/BartD4.png</file>
+        <file>Imagenes1/BartD5.png</file>
+        <file>Imagenes1/BartD6.png</file>
+        <file>Imagenes1/BartD7.png</file>
+        <file>Imagenes1/BartD8.png</file>
+        <file>Imagenes1/Barti1.PNG</file>
+        <file>Imagenes1/Barti2.PNG</file>
+        <file>Imagenes1/Barti3.PNG</file>
+        <file>Imagenes1/Barti4.PNG</file>
+        <file>Imagenes1/Barti5.PNG</file>
+        <file>Imagenes1/Barti6.PNG</file>
+        <file>Imagenes1/Barti7.PNG</file>
+        <file>Imagenes1/BobPatino_BartHalloween.jpg</file>
+        <file>Imagenes1/Fondo1.jpeg</file>
+        <file>Imagenes1/titulo.PNG</file>
+        <file>Imagenes1/badcops.wav</file>
+        <file>Imagenes1/Bobpatinox.png</file>
+        <file>Imagenes1/hacha.png</file>
+        <file>Imagenes1/0 vidas.png</file>
+        <file>Imagenes1/1 vidas.png</file>
+        <file>Imagenes1/1 vidasBart.PNG</file>
+        <file>Imagenes1/2 vidasBart.PNG</file>
+        <file>Imagenes1/3 vidasBart.PNG</file>
+        <file>Imagenes1/5 vidas.png</file>
+        <file>Imagenes1/10 vidas.png</file>
+        <file>Imagenes1/15 vidas.png</file>
+        <file>Imagenes1/Bobpatinovida.png</file>
+        <file>Imagenes1/VidaBa.png</file>
+        <file>Imagenes1/4 vidasBart.PNG</file>
+        <file>Imagenes1/5 vidasBart.PNG</file>
+        <file>Imagenes1/20 vidas.png</file>
+        <file>Imagenes1/0 vidasBart.PNG</file>
+        <file>Imagenes1/perdio.png</file>
+        <file>Imagenes1/PIEDRA.png</file>
+        <file>Imagenes1/corono.png</file>
+    </qresource>
+</RCC>

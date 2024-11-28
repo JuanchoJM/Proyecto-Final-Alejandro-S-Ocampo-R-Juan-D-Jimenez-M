@@ -4,7 +4,7 @@
 Proyectil::Proyectil(QGraphicsItem* propietario, QGraphicsItem* parent)
     : QObject(), QGraphicsPixmapItem(parent), propietario(propietario) {
     // Cargar imagen del proyectil
-    QPixmap imagen(":/Imagenes/hacha.png");
+    QPixmap imagen(":/Imagenes1/hacha.png");
     setPixmap(imagen.scaled(60, 60, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     // Determinar dirección aleatoria (-1 para izquierda, 1 para derecha)
@@ -27,4 +27,7 @@ void Proyectil::mover() {
     if (y() + pixmap().height() < 0 || x() + pixmap().width() < 0 || x() > scene()->width()) {
         delete this;
     }
+}
+void Proyectil::establecerDireccion(int nuevaDireccion) {
+    direccion = nuevaDireccion; // Asignar dirección: -1 para izquierda, 1 para derecha
 }

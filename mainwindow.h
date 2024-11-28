@@ -4,8 +4,8 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QList>
-//#include <QMediaPlayer>
-//#include <QAudioOutput>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include <QGraphicsRectItem>
 
 QT_BEGIN_NAMESPACE
@@ -21,15 +21,16 @@ public:
     ~MainWindow();
 
 private slots:
-    void startGame();
     void registrarse();
+    void verificarInicio();
+    void nivel1();
 
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;        // Escena inicial
     QGraphicsScene *emptyScene;  // Escena de juego
     //QMediaPlayer *player;
-   // QAudioOutput *audioOutput;
+    // QAudioOutput *audioOutput;
 
     // Métodos auxiliares
     bool verificarUsuario(const QString &usuario, const QString &contrasena);

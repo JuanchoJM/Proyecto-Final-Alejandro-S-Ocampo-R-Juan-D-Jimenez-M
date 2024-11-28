@@ -1,23 +1,29 @@
 #include "Enemigo.h"
 #include <QRandomGenerator>
 #include <QDebug>
-#include "proyectil.h"
 #include <QMessageBox>
+#include <QApplication>
+#include "proyectil.h"
+#include "jugador.h"
 Enemigo::Enemigo(QGraphicsItem* parent)
     : Jugador(parent) {
     // Temporizadores
     temporizadorMovimiento = new QTimer(this);
-    connect(temporizadorMovimiento, &QTimer::timeout, this, &Enemigo::moverAleatorio);
-    vidaEnemigo=5;
+    connect(temporizadorMovimiento, &QTimer::timeout, this, &Enemigo::moverHaciaJugador);
+    vidaEnemigo=20;
     temporizadorDisparo = new QTimer(this);
     connect(temporizadorDisparo, &QTimer::timeout, this, &Enemigo::disparar);
-
+    temporizadorvidaEnemigo= new QTimer(this);
+    connect(temporizadorvidaEnemigo, &QTimer::timeout, this, &Enemigo::detectarColisionConProyectil);
     iniciarMovimiento();
+    gravedad=1;
+
 }
 
 Enemigo::~Enemigo() {
     delete temporizadorMovimiento;
     delete temporizadorDisparo;
+    delete temporizadorvidaEnemigo;
 }
 
 void Enemigo::cargarImagen(const QString& rutaImagen) {
@@ -30,32 +36,52 @@ void Enemigo::cargarImagen(const QString& rutaImagen) {
 }
 
 void Enemigo::iniciarMovimiento() {
-    temporizadorMovimiento->start(500); // Mover cada 500 ms
-    temporizadorDisparo->start(500);   // Disparar cada 1 segundo
+    temporizadorMovimiento->start(30); // Mover cada 30 ms
+    temporizadorDisparo->start(1000);   // Disparar cada 1 segundo
+    temporizadorvidaEnemigo->start(5);
 }
 
-void Enemigo::moverAleatorio() {
-    // Movimiento aleatorio
-    float desplazamientoX = QRandomGenerator::global()->bounded(-100, 100); // Aleatorio entre -10 y 10
+void Enemigo::moverHaciaJugador() {
 
-    float nuevoX = x() + desplazamientoX;
-    float nuevoY = y();
+    if (!scene()) return;
 
-    // Verificar límites de la escena
-    if (scene()) {
-        if (nuevoX < 0) nuevoX = 0;
-        if (nuevoX + pixmap().width() > scene()->width())
-            nuevoX = scene()->width() - pixmap().width();
-        if (nuevoY < 0) nuevoY = 0;
-        if (nuevoY + pixmap().height() > scene()->height())
-            nuevoY = scene()->height() - pixmap().height();
+    // Buscar al jugador en la escena
+    Jugador* jugador = nullptr;
+    QList<QGraphicsItem*> itemsEnEscena = scene()->items();
+
+    for (QGraphicsItem* item : itemsEnEscena) {
+        jugador = dynamic_cast<Jugador*>(item);
+        if (jugador && jugador != this) { // Asegurarse de que no sea el propio enemigo
+            break;
+        }
     }
 
-    setPos(nuevoX, nuevoY);
+    if (!jugador) {
+        qDebug() << "No se encontró al jugador";
+        return;
+    }
 
-    // Saltar ocasionalmente
-    if (QRandomGenerator::global()->bounded(100) < 20) { // Probabilidad del 20%
-        velocidadY = -15;
+    // Calcular distancia al jugador
+    qreal dx = jugador->x() - x();
+    qreal dy = jugador->y() - y();
+    qreal distancia = std::sqrt(dx * dx + dy * dy);
+
+
+    // Si la distancia es mayor a un umbral, moverse
+    if (distancia > 5.0) { // Cambia este valor según la precisión que desees
+        qreal velocidadX = 5;   // Velocidad del enemigo en X
+        qreal velocidadY = 0;   // Velocidad inicial en Y
+
+        if (distancia < 300.0) { // Si la distancia es considerable, realizar un salto
+            velocidadY = -15;   // Valor de la velocidad vertical
+        }
+
+        // Actualizar posición con velocidad en X e Y
+        setPos(x() + velocidadX * (dx / distancia),
+               y() + velocidadY);
+
+    } else {
+        qDebug() << "Enemigo ya está cerca del jugador";
     }
 }
 
@@ -68,6 +94,7 @@ void Enemigo::disparar() {
     }
 }
 void Enemigo::detectarColisionConProyectil() {
+
     QList<QGraphicsItem*> itemsColisionados = collidingItems();
 
     for (QGraphicsItem* item : itemsColisionados) {
@@ -77,16 +104,20 @@ void Enemigo::detectarColisionConProyectil() {
         if (proyectil) {
             // Si el proyectil fue disparado por el jugador, reduce vidas del enemigo
             if (proyectil->obtenerPropietario() != this) {
-                // El proyectil fue disparado por el enemigo, por lo tanto es del jugador
+                // El proyectil no fue disparado por el enemigo, por lo tanto es del jugador
                 vidaEnemigo--;
-                qDebug() << "Vida del enemigo: " << vidaEnemigo;
-
+                  emit vidasCambiadas(vidaEnemigo); // Emitir señal cuando las vidas cambien
+                 qDebug() << "Vida del enemigo: " << vidaEnemigo;
                 // Eliminar el proyectil
                 scene()->removeItem(proyectil);
                 delete proyectil;
 
                 if (vidaEnemigo <= 0) {
-                    QMessageBox::information(nullptr, "Enemigo derrotado", "¡Has derrotado al enemigo!");
+                    QMessageBox msgBox;
+                    msgBox.setWindowTitle("Enemigo derrotado");
+                    msgBox.setText("¡Has derrotado al enemigo!");
+                    msgBox.setIconPixmap(QPixmap(":/Imagenes1/corono.png")); // Imagen grande
+                    msgBox.exec();
                     delete this;
                     return;
                 }

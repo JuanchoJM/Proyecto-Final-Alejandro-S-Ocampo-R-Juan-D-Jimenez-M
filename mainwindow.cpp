@@ -19,14 +19,14 @@ MainWindow::MainWindow(QWidget *parent)
     // Tamaño de la escena y ventana
     int sceneWidth = 1280;
     int sceneHeight = 546;
-    this->resize(1280,546); // Ajustar el tamaño de la ventana
-    this->setFixedSize(1280, 546); // Fijar el tamaño para evitar cambios
+    this->resize(sceneWidth, sceneHeight); // Ajustar el tamaño de la ventana
+    this->setFixedSize(sceneWidth, sceneHeight); // Fijar el tamaño para evitar cambios
 
     // Configuración del QGraphicsView
     ui->graphicsView->resize(sceneWidth, sceneHeight);
     scene->setSceneRect(0, 0, sceneWidth, sceneHeight);
 
-    QPixmap background("C:\\Users\\PC\\Documents\\ProyectoFinal\\BobPatino_BartHalloween.jpg");
+    QPixmap background(":/Imagenes1/BobPatino_BartHalloween.jpg");
     scene->setBackgroundBrush(QBrush(background.scaled(sceneWidth, sceneHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -41,10 +41,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lineEdit_4->setEchoMode(QLineEdit::Password);
 
     // Conexión de botones
-    connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::startGame);
+    connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::verificarInicio);
     connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::registrarse);
 }
-
 
 MainWindow::~MainWindow()
 {
@@ -99,7 +98,7 @@ bool MainWindow::verificarUsuario(const QString &usuario, const QString &contras
     return false;
 }
 
-void MainWindow::startGame()
+void MainWindow::verificarInicio()
 {
     QString usuario = ui->lineEdit_3->text();
     QString contrasena = ui->lineEdit_2->text();
@@ -109,6 +108,24 @@ void MainWindow::startGame()
         return;
     }
 
+    if (!ui->radioButtonNivel1->isChecked() && !ui->radioButtonNivel2->isChecked() && !ui->radioButtonNivel3->isChecked()) {
+        QMessageBox::warning(this, "Error", "Por favor, selecciona un nivel para continuar.");
+        return;
+    }
+
+    if (ui->radioButtonNivel1->isChecked()) {
+        nivel1();
+    } else if (ui->radioButtonNivel2->isChecked()) {
+        QMessageBox::information(this, "Nivel 2", "Nivel 2 aún no implementado.");
+        // Implementar nivel 2
+    } else if (ui->radioButtonNivel3->isChecked()) {
+        QMessageBox::information(this, "Nivel 3", "Nivel 3 aún no implementado.");
+        // Implementar nivel 3
+    }
+}
+
+void MainWindow::nivel1()
+{
     // Eliminar los widgets de la interfaz original
     delete ui->pushButton;
     delete ui->pushButton_2;
@@ -123,10 +140,14 @@ void MainWindow::startGame()
     delete ui->label_6;
     delete ui->lineEdit_4;
     delete ui->label_4;
+    delete ui->label_8;
+    delete ui->radioButtonNivel1;
+    delete ui->radioButtonNivel2;
+    delete ui->radioButtonNivel3;
 
     ui->graphicsView->setScene(emptyScene);
 
-    QPixmap nuevoFondo("C:\\Users\\PC\\Documents\\ProyectoFinal\\Fondo1");
+    QPixmap nuevoFondo(":/Imagenes1/Fondo1");
     emptyScene->setBackgroundBrush(QBrush(nuevoFondo.scaled(emptyScene->width(), emptyScene->height(),
                                                             Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
 
@@ -144,37 +165,44 @@ void MainWindow::startGame()
 
     // Crear y añadir enemigos
     Enemigo *enemigo1 = new Enemigo();
-    enemigo1->cargarImagen("C:\\Users\\PC\\Documents\\ProyectoFinal\\Bobpatinox");
+    enemigo1->cargarImagen(":/Imagenes1/Bobpatinox");
     enemigo1->setPos(100, 100); // Posición inicial del enemigo
     emptyScene->addItem(enemigo1);
     enemigo1->setPlataformas(plataformas);
 
     // Añadir imágenes en la esquina superior izquierda
-    QGraphicsPixmapItem *vidasIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/5 vidasBart.PNG"));
+    QGraphicsPixmapItem *vidasIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/5 vidasBart.PNG"));
     vidasIcono->setPos(160, 30); // Posición cerca de la esquina superior izquierda
     emptyScene->addItem(vidasIcono);
 
-    QGraphicsPixmapItem *bartIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/VidaBa.png"));
+    QGraphicsPixmapItem *bartIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/VidaBa.png"));
     bartIcono->setPixmap(bartIcono->pixmap().scaled(180, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation)); // Cambiar tamaño
     bartIcono->setPos(103, 0); // A la derecha del icono de vidas
     emptyScene->addItem(bartIcono);
-    QGraphicsPixmapItem *vidasIconoB = new QGraphicsPixmapItem(QPixmap(":/Imagenes/20 vidas.png"));
-    vidasIconoB->setPos(900, 10); // Posición cerca de la esquina superior izquierda
+
+    QGraphicsPixmapItem *vidasIconoB = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/20 vidas.png"));
+    vidasIconoB->setPos(900, 10);
     emptyScene->addItem(vidasIconoB);
-    QGraphicsPixmapItem *BobIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/Bobpatinovida.png"));
-    BobIcono->setPixmap(BobIcono->pixmap().scaled(110, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation)); // Cambiar tamaño
-    BobIcono->setPos(1140, 0); // A la derecha del icono de vidas
+
+    QGraphicsPixmapItem *BobIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/Bobpatinovida.png"));
+    BobIcono->setPixmap(BobIcono->pixmap().scaled(110, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    BobIcono->setPos(1140, 0);
     emptyScene->addItem(BobIcono);
+
     connect(jugador, &Jugador::vidasCambiadas, [vidasIcono](int vidas) {
-        QString ruta = QString(":/Imagenes/%1 vidasBart.PNG").arg(vidas);
+        QString ruta = QString(":/Imagenes1/%1 vidasBart.PNG").arg(vidas);
         vidasIcono->setPixmap(QPixmap(ruta).scaled(vidasIcono->pixmap().size(),
                                                    Qt::KeepAspectRatio, Qt::SmoothTransformation));
     });
+    connect(enemigo1, &Enemigo::vidasCambiadas, [vidasIconoB](int vidaEnemigo) {
+        if (vidaEnemigo % 5 == 0) { // Verificar si el número de vidas es múltiplo de 5
+            QString ruta = QString(":/Imagenes1/%1 vidas.png").arg(vidaEnemigo);
+            vidasIconoB->setPixmap(QPixmap(ruta).scaled(vidasIconoB->pixmap().size(),
+                                                        Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }});
 }
-
-
-
-QList<QGraphicsItem*> MainWindow::crearPlataformas(QGraphicsScene *scene)
+QList<QGraphicsItem*>
+MainWindow::crearPlataformas(QGraphicsScene *scene)
 {
     QList<QGraphicsItem*> plataformas;
 

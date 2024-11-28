@@ -1,9 +1,10 @@
 #ifndef PROYECTIL_H
 #define PROYECTIL_H
-#include <QGraphicsItem>
-#include <QTimer>
+
 #include <QObject>
 #include <QGraphicsPixmapItem>
+#include <QTimer>
+#include <QGraphicsItem>
 
 class Proyectil : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
@@ -13,7 +14,7 @@ public:
 
     // Método para obtener el propietario del proyectil
     QGraphicsItem* obtenerPropietario() const { return propietario; }
-
+    void establecerDireccion(int nuevaDireccion);
 private slots:
     void mover();
 
@@ -24,3 +25,5 @@ private:
 };
 
 #endif // PROYECTIL_H
+
+

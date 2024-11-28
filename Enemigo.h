@@ -16,16 +16,16 @@ public:
     ~Enemigo();
     void cargarImagen(const QString& rutaImagen);
     void iniciarMovimiento();
-    void detectarColisionConProyectil();
 
 protected slots:
-    void moverAleatorio();
+    void detectarColisionConProyectil() override;
+    void moverHaciaJugador();
     void disparar();
-
 private:
+    int vidaEnemigo;
     QTimer* temporizadorMovimiento;
     QTimer* temporizadorDisparo;
-    int vidaEnemigo;
+    QTimer* temporizadorvidaEnemigo;
 };
 
 #endif // ENEMIGO_H
