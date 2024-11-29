@@ -20,6 +20,7 @@ public:
 private:
      int vidas;
     QTimer *temporizadorvidas;
+     bool enEstadoDeDisparo;
 signals:
     void vidasCambiadas(int vidas); // Señal para notificar cambio de vidas
 protected:
@@ -28,6 +29,8 @@ protected:
 
     QVector<QPixmap> imagenesDerecha;
     QVector<QPixmap> imagenesIzquierda;
+    QPixmap imagenDisparoDerecha;
+    QPixmap imagenDisparoIzquierda;
     int indiceImagen;
     bool avanzando;
     bool direccionDerecha;

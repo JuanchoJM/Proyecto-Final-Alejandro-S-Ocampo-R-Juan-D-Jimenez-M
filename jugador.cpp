@@ -22,7 +22,8 @@ Jugador::Jugador(QGraphicsItem* parent)
         imagenesIzquierda.append(imagen.scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
-
+    imagenDisparoDerecha = QPixmap(":Imagenes1/BartDisparoDerecha.png").scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    imagenDisparoIzquierda = QPixmap(":Imagenes1/BartDisparoIzquierda.png").scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     setPixmap(imagenesDerecha[indiceImagen]);
 
     // Temporizadores
@@ -53,8 +54,10 @@ void Jugador::keyPressEvent(QKeyEvent* event) {
         descendiendo = true; // Activar modo de descenso
     } else if (event->key() == Qt::Key_Q) {
         dispararPiedraIzquierda();
+        enEstadoDeDisparo = true;
     } else if (event->key() == Qt::Key_E) {
         dispararPiedraDerecha();
+        enEstadoDeDisparo = true;
     }
 
     actualizarImagen();
@@ -141,6 +144,8 @@ void Jugador::actualizarFisica()
 
 void Jugador::actualizarImagen()
 {
+    if (enEstadoDeDisparo) return; // Salir si el jugador está disparando
+
     // Selecciona el conjunto de imágenes según la última dirección horizontal
     const QVector<QPixmap>& imagenesActuales = direccionDerecha ? imagenesDerecha : imagenesIzquierda;
 
@@ -200,35 +205,43 @@ void Jugador::detectarColisionConProyectil() {
 void Jugador::dispararPiedraIzquierda() {
     if (!scene()) return;
 
+    // Cambiar temporalmente a la imagen de disparo
+    setPixmap(imagenDisparoIzquierda);
+
     // Crear un proyectil con este jugador como propietario
     Proyectil* piedra = new Proyectil(this);
     piedra->setPixmap(QPixmap(":/Imagenes1/PIEDRA.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
-    // Posicionar piedra a la izquierda del jugador
     piedra->setPos(x() - piedra->pixmap().width(), y() + pixmap().height() / 2 - piedra->pixmap().height() / 2);
-
-    // Configurar dirección del proyectil
     piedra->establecerDireccion(-1); // Dirección hacia la izquierda
 
-    // Añadir proyectil a la escena
     scene()->addItem(piedra);
+
+    // Restaurar la actualización de la imagen después de un pequeño retraso
+    QTimer::singleShot(500, this, [this]() {
+        enEstadoDeDisparo = false; // Permitir que se reanude la animación
+        actualizarImagen(); // Actualizar la imagen manualmente después del disparo
+    });
 }
 
 void Jugador::dispararPiedraDerecha() {
     if (!scene()) return;
 
+    // Cambiar temporalmente a la imagen de disparo
+    setPixmap(imagenDisparoDerecha);
+
     // Crear un proyectil con este jugador como propietario
     Proyectil* piedra = new Proyectil(this);
     piedra->setPixmap(QPixmap(":/Imagenes1/PIEDRA.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
-    // Posicionar piedra a la derecha del jugador
     piedra->setPos(x() + pixmap().width(), y() + pixmap().height() / 2 - piedra->pixmap().height() / 2);
-
-    // Configurar dirección del proyectil
     piedra->establecerDireccion(1); // Dirección hacia la derecha
 
-    // Añadir proyectil a la escena
     scene()->addItem(piedra);
+
+    // Restaurar la actualización de la imagen después de un pequeño retraso
+    QTimer::singleShot(500, this, [this]() {
+        enEstadoDeDisparo = false; // Permitir que se reanude la animación
+        actualizarImagen(); // Actualizar la imagen manualmente después del disparo
+    });
 }
 
 

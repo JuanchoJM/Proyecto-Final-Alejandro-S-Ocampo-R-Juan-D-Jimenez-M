@@ -7,6 +7,9 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
+#include "jugadornivel2.h"
+#include "enemigonivel2.h"
+#include "Animales.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -15,6 +18,20 @@ MainWindow::MainWindow(QWidget *parent)
     emptyScene(new QGraphicsScene(this))
 {
     ui->setupUi(this);
+    player = new QMediaPlayer(this);
+    videoWidget = new QVideoWidget(this);
+    audioOutput=new QAudioOutput(this);
+    player->setVideoOutput(videoWidget);
+    player->setAudioOutput(audioOutput);
+
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(videoWidget);
+    setLayout(layout);
+    videoWidget->setFixedSize(1280, 546);
+    connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
+    player->setSource(QUrl("qrc:/Imagenes1/badcops.mp4")); // Primera canción
+    player->play();
 
     // Tamaño de la escena y ventana
     int sceneWidth = 1280;
@@ -116,16 +133,16 @@ void MainWindow::verificarInicio()
     if (ui->radioButtonNivel1->isChecked()) {
         nivel1();
     } else if (ui->radioButtonNivel2->isChecked()) {
-        QMessageBox::information(this, "Nivel 2", "Nivel 2 aún no implementado.");
-        // Implementar nivel 2
+        nivel3();
     } else if (ui->radioButtonNivel3->isChecked()) {
-        QMessageBox::information(this, "Nivel 3", "Nivel 3 aún no implementado.");
-        // Implementar nivel 3
+        nivel2();
     }
+
 }
 
 void MainWindow::nivel1()
 {
+
     // Eliminar los widgets de la interfaz original
     delete ui->pushButton;
     delete ui->pushButton_2;
@@ -144,6 +161,12 @@ void MainWindow::nivel1()
     delete ui->radioButtonNivel1;
     delete ui->radioButtonNivel2;
     delete ui->radioButtonNivel3;
+
+
+    player->setSource(QUrl("qrc:/Imagenes1/cinematica1.mp4"));
+    reanudarVideo();
+    player->play();
+    connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
 
     ui->graphicsView->setScene(emptyScene);
 
@@ -251,3 +274,172 @@ MainWindow::crearPlataformas(QGraphicsScene *scene)
     plataformas.append(plataforma9);
     return plataformas;
 }
+void MainWindow::mousePressEvent(QMouseEvent */*event*/)
+{
+    if (player) {
+        // Detener la reproducción
+        player->stop();
+
+        // Liberar recursos
+        //delete player;
+        //player = nullptr;
+        videoWidget->hide();
+        emit player->mediaStatusChanged(QMediaPlayer::EndOfMedia);
+        //delete audioOutput;
+        //audioOutput = nullptr;
+    }
+}
+void MainWindow::reanudarVideo()
+{
+    if (player) {
+        // Mostrar el widget del video
+        videoWidget->show();
+        // Reanudar la reproducción
+        player->play();
+
+        qDebug() << "Video reanudado.";
+    }
+}
+void MainWindow::nivel2()
+{
+    // Eliminar los widgets de la interfaz original
+    delete ui->pushButton;
+    delete ui->pushButton_2;
+    delete ui->lineEdit_2;
+    delete ui->lineEdit_3;
+    delete ui->label;
+    delete ui->label_3;
+    delete ui->label_5;
+    delete ui->label_7;
+    delete ui->label_2;
+    delete ui->lineEdit;
+    delete ui->label_6;
+    delete ui->lineEdit_4;
+    delete ui->label_4;
+    delete ui->label_8;
+    delete ui->radioButtonNivel1;
+    delete ui->radioButtonNivel2;
+    delete ui->radioButtonNivel3;
+
+    player->setSource(QUrl("qrc:/Imagenes1/cinematica3.mp4"));
+    reanudarVideo();
+    player->play();
+    connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
+
+    // Configurar la escena vacía para el nivel 2
+    ui->graphicsView->setScene(emptyScene);
+
+    // Ajustar las dimensiones de la escena
+    emptyScene->setSceneRect(0, 0, 1280, 546);
+
+    // Configurar el fondo de la escena
+    QPixmap nuevoFondo(":/Imagenes1/Fondo 2.png");
+    emptyScene->setBackgroundBrush(QBrush(nuevoFondo.scaled(emptyScene->sceneRect().width(),
+                                                            emptyScene->sceneRect().height(),
+                                                            Qt::IgnoreAspectRatio,
+                                                            Qt::SmoothTransformation)));
+
+    // Crear y añadir al jugador a la escena
+    JugadorNivel2 *jugador = new JugadorNivel2();
+    jugador->setLimites(200, 1050, 0,530); // Establecer límites del mapa
+    jugador->setPos(640 - jugador->pixmap().width() / 2, // Centrar horizontalmente
+                    546 - jugador->pixmap().height() - 50); // Posicionar cerca de la parte inferior
+    emptyScene->addItem(jugador);
+
+    // Configurar el jugador como el objeto enfocado para recibir eventos de teclado
+    jugador->setFlag(QGraphicsItem::ItemIsFocusable);
+    jugador->setFocus();
+
+    // Crear y añadir al enemigo a la escena
+    EnemigoNivel2 *enemigo = new EnemigoNivel2();
+
+    // Configurar el enemigo con una imagen
+    enemigo->cargarImagen(":/Imagenes1/Bobtirando.png"); // Cambia esta ruta por la ruta real de tu imagen de enemigo
+    emptyScene->addItem(enemigo);
+
+    // Inicializar la posición del enemigo después de agregarlo a la escena
+    enemigo->cambiarPosicion();
+
+
+
+    // Crear y agregar múltiples animales a la escena
+    for (int i = 0; i < 5; ++i) {  // Cambiar 5 por la cantidad de animales que quieras en total
+        Animales *animal = new Animales();  // Crea un nuevo animal (cocodrilo o pez aleatorio)
+        animal->colocarAleatoriamente(200, 1050, 0, 530);  // Colocarlos aleatoriamente dentro de los límites
+        emptyScene->addItem(animal);  // Añadir el an   imal a la escena
+
+    }
+
+    QTimer *victoryTimer = new QTimer(this);
+    victoryTimer->setSingleShot(true); // Solo se dispara una vez
+    connect(victoryTimer, &QTimer::timeout, [this, jugador]() {
+        if (jugador->obtenerVidas() > 0) {
+            QMessageBox::information(this, "Victoria", "¡Has ganado el nivel 2!");
+        } else {
+            QMessageBox::information(this, "Derrota", "No tienes vidas suficientes para continuar.");
+        }
+    });
+
+    // Inicia el temporizador (60 segundos)
+    victoryTimer->start(5000);
+
+}
+
+
+void MainWindow::reproducirSiguienteCancion() {
+    static int currentIndex = 0;
+    QList<QString> listaCanciones = {
+         ":/Imagenes1/shideshow.mp3",
+        ":/Imagenes1/cancionbarco.mp3",
+        ":/Imagenes1/capefear.mp3"
+
+    };
+
+    currentIndex = (currentIndex + 1) % listaCanciones.size(); // Avanzar al siguiente índice
+
+    player->setSource(QUrl("qrc" + listaCanciones[currentIndex])); // Cambiar la canción
+    player->play(); // Reproducir la siguiente canción
+}
+
+
+void MainWindow::cancionTerminada(QMediaPlayer::MediaStatus status) {
+    if (status == QMediaPlayer::EndOfMedia) {
+        reproducirSiguienteCancion();
+    }
+}
+void MainWindow::nivel3() {
+    // Eliminar los widgets de la interfaz original
+    delete ui->pushButton;
+    delete ui->pushButton_2;
+    delete ui->lineEdit_2;
+    delete ui->lineEdit_3;
+    delete ui->label;
+    delete ui->label_3;
+    delete ui->label_5;
+    delete ui->label_7;
+    delete ui->label_2;
+    delete ui->lineEdit;
+    delete ui->label_6;
+    delete ui->lineEdit_4;
+    delete ui->label_4;
+    delete ui->label_8;
+    delete ui->radioButtonNivel1;
+    delete ui->radioButtonNivel2;
+    delete ui->radioButtonNivel3;
+
+    // Inicia el reproductor de video
+    player->setSource(QUrl("qrc:/Imagenes1/cinematica2.mp4"));
+    reanudarVideo();
+    player->play();
+    connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
+
+    ui->graphicsView->setScene(emptyScene);
+
+    // Cargar un fondo específico para el nivel 3
+    QPixmap nuevoFondo(":/Imagenes1/fondoNivel3.jpg");
+    emptyScene->setBackgroundBrush(QBrush(nuevoFondo.scaled(emptyScene->width(), emptyScene->height(),
+                                                            Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
+
+}
+
+
