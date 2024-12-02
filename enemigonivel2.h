@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QGraphicsPixmapItem>
 #include <QTimer>
-
+#include "proyectilnivel2.h"
 
 class EnemigoNivel2 : public QObject, public QGraphicsPixmapItem
 {

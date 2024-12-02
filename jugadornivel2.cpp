@@ -12,8 +12,8 @@ JugadorNivel2::JugadorNivel2(QGraphicsItem *parent)
     vidas(5)
 {
     // Escalar la imagen en el constructor
-    QPixmap pixmap(":/Imagenes1/Bartremando.png"); // Ruta de la imagen
-    pixmap = pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation); // Ajusta el tamaño de la imagen
+    QPixmap pixmap(":/Imagenes/Bartremando.png"); // Ruta de la imagen
+    pixmap = pixmap.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation); // Ajusta el tamaño de la imagen
     setPixmap(pixmap); // Establece la imagen escalada en el jugador
 }
 
@@ -60,7 +60,7 @@ void JugadorNivel2::keyPressEvent(QKeyEvent *event)
             setY(nuevaPosicion); // Mover hacia abajo
         }
     }
-    detectarColisiones();
+     detectarColisiones();
 }
 void JugadorNivel2::reducirVida() {
     // Evitar que las vidas sean negativas
@@ -69,7 +69,7 @@ void JugadorNivel2::reducirVida() {
     }
 
     vidas--;  // Reducir una vida
-    //emit vidasCambiadas(vidas); // Emitir señal cuando las vidas cambien
+    emit vidasCambiadas(vidas);
     qDebug() << "Vidas restantes:" << vidas;
 
     // Verificar si ya hemos mostrado el mensaje de "Has perdido"
@@ -106,6 +106,7 @@ void JugadorNivel2::detectarColisiones() {
         }
     }
 }
+
 int JugadorNivel2::obtenerVidas() const
 {
     return vidas;

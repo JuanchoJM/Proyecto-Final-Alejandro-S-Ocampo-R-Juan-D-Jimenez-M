@@ -4,8 +4,10 @@
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 
-class JugadorNivel2 : public QGraphicsPixmapItem
-{
+class JugadorNivel2 : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT // Macro para señales y slots
+
+
 public:
     // Constructor
     JugadorNivel2(QGraphicsItem *parent = nullptr);
@@ -20,9 +22,13 @@ public:
     int obtenerVidas() const;
     void verificarColisiones();
     void detectarColisiones();
+    int vidas;
+
 protected:
     // Evento de teclado para movimiento
     void keyPressEvent(QKeyEvent *event) override;
+signals:
+    void vidasCambiadas(int vidas);
 
 private:
     int velocidad;         // Velocidad de movimiento del jugador
@@ -30,7 +36,7 @@ private:
     int limiteDerecho;     // Límite derecho del mapa
     int limiteSuperior;    // Límite superior del mapa
     int limiteInferior;    // Límite inferior del mapa
-    int vidas;             // Cantidad de vidas del jugador
+                // Cantidad de vidas del jugador
 };
 
 #endif // JUGADORNIVEL2_H

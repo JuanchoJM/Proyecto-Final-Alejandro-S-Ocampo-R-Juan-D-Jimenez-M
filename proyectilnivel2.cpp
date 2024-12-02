@@ -7,7 +7,7 @@ ProyectilNivel2::ProyectilNivel2(QGraphicsItem *parent) : QGraphicsPixmapItem(pa
 {
     // Selección aleatoria entre piedra y tronco
     QPixmap pixmap = (QRandomGenerator::global()->bounded(2) == 0) ?
-                         QPixmap(":/Imagenes1/piedra2.png") : QPixmap(":/Imagenes1/Tronco.png");
+                         QPixmap(":/Imagenes/piedra2.png") : QPixmap(":/Imagenes/Tronco.png");
 
     setPixmap(pixmap.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 

@@ -35,9 +35,9 @@ void Animales::colocarAleatoriamente(int limiteIzquierdo, int limiteDerecho, int
 
     // Dependiendo del tipo de animal, cargar una imagen diferente
     if (tipoAnimal == "cocodrilo") {
-        cargarImagen(":/Imagenes1/Cocodrilo.png");  // Ruta de imagen para el cocodrilo
+        cargarImagen(":/Imagenes/Cocodrilo.png");  // Ruta de imagen para el cocodrilo
     } else if (tipoAnimal == "pez") {
-        cargarImagen(":/Imagenes1/pez.png");   // Ruta de imagen para el pez
+        cargarImagen(":/Imagenes/pez.png");   // Ruta de imagen para el pez
     }
 }
 

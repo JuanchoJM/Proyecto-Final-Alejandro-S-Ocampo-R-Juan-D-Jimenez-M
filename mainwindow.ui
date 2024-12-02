@@ -189,15 +189,15 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>240</y>
+      <x>350</x>
+      <y>360</y>
       <width>391</width>
       <height>161</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">
-image: url(:/Imagenes1/titulo.PNG);</string>
+image: url(:/Imagenes/titulo.PNG);</string>
     </property>
     <property name="text">
      <string/>

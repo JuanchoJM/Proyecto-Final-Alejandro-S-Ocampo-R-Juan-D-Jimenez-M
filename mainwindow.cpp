@@ -10,7 +10,9 @@
 #include "jugadornivel2.h"
 #include "enemigonivel2.h"
 #include "Animales.h"
-
+#include "jugadornivel3.h"
+#include "enemigonivel3.h"
+#include "objeto.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -23,14 +25,14 @@ MainWindow::MainWindow(QWidget *parent)
     audioOutput=new QAudioOutput(this);
     player->setVideoOutput(videoWidget);
     player->setAudioOutput(audioOutput);
-
+    audioOutput->setVolume(0.3);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(videoWidget);
     setLayout(layout);
     videoWidget->setFixedSize(1280, 546);
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
-    player->setSource(QUrl("qrc:/Imagenes1/badcops.mp4")); // Primera canción
+    player->setSource(QUrl("qrc:/Imagenes/badcops.mp4")); // Primera canción
     player->play();
 
     // Tamaño de la escena y ventana
@@ -43,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->graphicsView->resize(sceneWidth, sceneHeight);
     scene->setSceneRect(0, 0, sceneWidth, sceneHeight);
 
-    QPixmap background(":/Imagenes1/BobPatino_BartHalloween.jpg");
+    QPixmap background(":/Imagenes/BobPatino_BartHalloween.jpg");
     scene->setBackgroundBrush(QBrush(background.scaled(sceneWidth, sceneHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -163,14 +165,14 @@ void MainWindow::nivel1()
     delete ui->radioButtonNivel3;
 
 
-    player->setSource(QUrl("qrc:/Imagenes1/cinematica1.mp4"));
+    player->setSource(QUrl("qrc:/Imagenes/cinematica1.mp4"));
     reanudarVideo();
     player->play();
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
 
     ui->graphicsView->setScene(emptyScene);
 
-    QPixmap nuevoFondo(":/Imagenes1/Fondo1");
+    QPixmap nuevoFondo(":/Imagenes/Fondo1");
     emptyScene->setBackgroundBrush(QBrush(nuevoFondo.scaled(emptyScene->width(), emptyScene->height(),
                                                             Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
 
@@ -186,42 +188,50 @@ void MainWindow::nivel1()
     jugador->setFlag(QGraphicsItem::ItemIsFocusable);
     jugador->setFocus();
 
-    // Crear y añadir enemigos
-    Enemigo *enemigo1 = new Enemigo();
-    enemigo1->cargarImagen(":/Imagenes1/Bobpatinox");
+
+    Enemigo* enemigo1 = new Enemigo();
+    enemigo1->cargarImagen(":/Imagenes/Bobpatinox");
     enemigo1->setPos(100, 100); // Posición inicial del enemigo
     emptyScene->addItem(enemigo1);
-    enemigo1->setPlataformas(plataformas);
+    enemigo1->setPlataformas(plataformas); // Asignar las plataformas al enemigo
+
 
     // Añadir imágenes en la esquina superior izquierda
-    QGraphicsPixmapItem *vidasIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/5 vidasBart.PNG"));
+    QGraphicsPixmapItem *vidasIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/5 vidasBart.PNG"));
     vidasIcono->setPos(160, 30); // Posición cerca de la esquina superior izquierda
     emptyScene->addItem(vidasIcono);
 
-    QGraphicsPixmapItem *bartIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/VidaBa.png"));
+    QGraphicsPixmapItem *bartIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/VidaBa.png"));
     bartIcono->setPixmap(bartIcono->pixmap().scaled(180, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation)); // Cambiar tamaño
     bartIcono->setPos(103, 0); // A la derecha del icono de vidas
     emptyScene->addItem(bartIcono);
 
-    QGraphicsPixmapItem *vidasIconoB = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/20 vidas.png"));
+    QGraphicsPixmapItem *vidasIconoB = new QGraphicsPixmapItem(QPixmap(":/Imagenes/20 vidas.png"));
     vidasIconoB->setPos(900, 10);
     emptyScene->addItem(vidasIconoB);
 
-    QGraphicsPixmapItem *BobIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes1/Bobpatinovida.png"));
+    QGraphicsPixmapItem *BobIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/Bobpatinovida.png"));
     BobIcono->setPixmap(BobIcono->pixmap().scaled(110, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     BobIcono->setPos(1140, 0);
     emptyScene->addItem(BobIcono);
 
-    connect(jugador, &Jugador::vidasCambiadas, [vidasIcono](int vidas) {
-        QString ruta = QString(":/Imagenes1/%1 vidasBart.PNG").arg(vidas);
+    connect(jugador, &Jugador::vidasCambiadas, [vidasIcono, this](int vidas) {
+        QString ruta = QString(":/Imagenes/%1 vidasBart.PNG").arg(vidas);
         vidasIcono->setPixmap(QPixmap(ruta).scaled(vidasIcono->pixmap().size(),
                                                    Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        if (vidas %2==0){
+        player->setSource(QUrl("qrc:/Imagenes/bobsonido.mp3"));
+        player->play();
+        connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);}
     });
-    connect(enemigo1, &Enemigo::vidasCambiadas, [vidasIconoB](int vidaEnemigo) {
+    connect(enemigo1, &Enemigo::vidasCambiadas, [vidasIconoB, this](int vidaEnemigo) {
         if (vidaEnemigo % 5 == 0) { // Verificar si el número de vidas es múltiplo de 5
-            QString ruta = QString(":/Imagenes1/%1 vidas.png").arg(vidaEnemigo);
+            QString ruta = QString(":/Imagenes/%1 vidas.png").arg(vidaEnemigo);
             vidasIconoB->setPixmap(QPixmap(ruta).scaled(vidasIconoB->pixmap().size(),
                                                         Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            player->setSource(QUrl("qrc:/Imagenes/bartsonido.mp3"));
+            player->play();
+            connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
         }});
 }
 QList<QGraphicsItem*>
@@ -321,11 +331,6 @@ void MainWindow::nivel2()
     delete ui->radioButtonNivel2;
     delete ui->radioButtonNivel3;
 
-    player->setSource(QUrl("qrc:/Imagenes1/cinematica3.mp4"));
-    reanudarVideo();
-    player->play();
-    connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
-
     // Configurar la escena vacía para el nivel 2
     ui->graphicsView->setScene(emptyScene);
 
@@ -333,7 +338,7 @@ void MainWindow::nivel2()
     emptyScene->setSceneRect(0, 0, 1280, 546);
 
     // Configurar el fondo de la escena
-    QPixmap nuevoFondo(":/Imagenes1/Fondo 2.png");
+    QPixmap nuevoFondo(":/Imagenes/Fondo 2.png");
     emptyScene->setBackgroundBrush(QBrush(nuevoFondo.scaled(emptyScene->sceneRect().width(),
                                                             emptyScene->sceneRect().height(),
                                                             Qt::IgnoreAspectRatio,
@@ -354,7 +359,7 @@ void MainWindow::nivel2()
     EnemigoNivel2 *enemigo = new EnemigoNivel2();
 
     // Configurar el enemigo con una imagen
-    enemigo->cargarImagen(":/Imagenes1/Bobtirando.png"); // Cambia esta ruta por la ruta real de tu imagen de enemigo
+    enemigo->cargarImagen(":/Imagenes/Bobtirando.png"); // Cambia esta ruta por la ruta real de tu imagen de enemigo
     emptyScene->addItem(enemigo);
 
     // Inicializar la posición del enemigo después de agregarlo a la escena
@@ -370,18 +375,82 @@ void MainWindow::nivel2()
 
     }
 
+    QGraphicsPixmapItem *vidasIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/5 vidasBart.PNG"));
+    vidasIcono->setPos(160, 30); // Posición cerca de la esquina superior izquierda
+    emptyScene->addItem(vidasIcono);
+
+    QGraphicsPixmapItem *bartIcono = new QGraphicsPixmapItem(QPixmap(":/Imagenes/VidaBa.png"));
+    bartIcono->setPixmap(bartIcono->pixmap().scaled(180, 170, Qt::KeepAspectRatio, Qt::SmoothTransformation)); // Cambiar tamaño
+    bartIcono->setPos(103, 0); // A la derecha del icono de vidas
+    emptyScene->addItem(bartIcono);
+
+    connect(jugador, &JugadorNivel2::vidasCambiadas, [vidasIcono, this](int vidas) {
+        QString ruta = QString(":/Imagenes/%1 vidasBart.PNG").arg(vidas);
+        vidasIcono->setPixmap(QPixmap(ruta).scaled(vidasIcono->pixmap().size(),
+                                                   Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        if (vidas %2==0){
+            player->setSource(QUrl("qrc:/Imagenes/bobsonido.mp3"));
+            player->play();
+            connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);}
+    });
+
+
+
+
     QTimer *victoryTimer = new QTimer(this);
     victoryTimer->setSingleShot(true); // Solo se dispara una vez
     connect(victoryTimer, &QTimer::timeout, [this, jugador]() {
         if (jugador->obtenerVidas() > 0) {
-            QMessageBox::information(this, "Victoria", "¡Has ganado el nivel 2!");
+            QMessageBox::information(this, "Victoria", "¡Has ganado el nivel final!");
+            player->setSource(QUrl("qrc:/Imagenes/cinematica3.mp4"));
+            reanudarVideo();
+            player->play();
+            connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
+            delete jugador;
         } else {
             QMessageBox::information(this, "Derrota", "No tienes vidas suficientes para continuar.");
+            delete jugador;
+        }
+    });
+    // Crear el QGraphicsTextItem para mostrar el contador
+    QGraphicsTextItem *textItem = new QGraphicsTextItem("25");
+    QGraphicsTextItem *textItem2 = new QGraphicsTextItem("Tiempo restante:");
+    textItem2->setPos(120,200);
+    textItem2->setDefaultTextColor(Qt::black);  // Establecer color del texto
+    textItem2->setFont(QFont("Arial", 15));  // Establecer tamaño de fuente
+    textItem->setDefaultTextColor(Qt::black);  // Establecer color del texto
+    textItem->setFont(QFont("Arial", 30));  // Establecer tamaño de fuente
+    textItem->setPos(150, 250);  // Establecer la posición en la escena
+
+    // Agregar el item de texto a la escena
+    emptyScene->addItem(textItem);
+    emptyScene->addItem(textItem2);
+    // Crear un QTimer para actualizar cada segundo
+    QTimer *timer = new QTimer(this);
+
+    // Inicializar el contador
+    int seconds = 60;
+
+    // Conectar el timer al slot para actualizar el contador
+    connect(timer, &QTimer::timeout, this, [ textItem, seconds, timer, textItem2]() mutable {
+        // Decrementar el contador
+        // Decrementar el contador
+        if (seconds > 0) {
+            seconds--;
+            textItem->setPlainText(QString::number(seconds));  // Actualizar el texto
+        } else {
+            // Detener el timer cuando llegue a 0
+            textItem2->setPlainText("Nos veremos de nuevo");
+            timer->stop();
         }
     });
 
+    // Configurar el intervalo del timer (1000 ms = 1 segundo)
+    timer->start(1000);
+
     // Inicia el temporizador (60 segundos)
-    victoryTimer->start(5000);
+    victoryTimer->start(60000);
+
 
 }
 
@@ -389,9 +458,9 @@ void MainWindow::nivel2()
 void MainWindow::reproducirSiguienteCancion() {
     static int currentIndex = 0;
     QList<QString> listaCanciones = {
-         ":/Imagenes1/shideshow.mp3",
-        ":/Imagenes1/cancionbarco.mp3",
-        ":/Imagenes1/capefear.mp3"
+         ":/Imagenes/shideshow.mp3",
+        ":/Imagenes/cancionbarco.mp3",
+        ":/Imagenes/capefear.mp3"
 
     };
 
@@ -428,18 +497,210 @@ void MainWindow::nivel3() {
     delete ui->radioButtonNivel3;
 
     // Inicia el reproductor de video
-    player->setSource(QUrl("qrc:/Imagenes1/cinematica2.mp4"));
+    player->setSource(QUrl("qrc:/Imagenes/cinematica2.mp4"));
     reanudarVideo();
     player->play();
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::cancionTerminada);
 
+    // Configurar la escena
     ui->graphicsView->setScene(emptyScene);
+    emptyScene->setSceneRect(0, 0, ui->graphicsView->width(), ui->graphicsView->height());
 
     // Cargar un fondo específico para el nivel 3
-    QPixmap nuevoFondo(":/Imagenes1/fondoNivel3.jpg");
+    QPixmap nuevoFondo(":/Imagenes/fondo3.png");
     emptyScene->setBackgroundBrush(QBrush(nuevoFondo.scaled(emptyScene->width(), emptyScene->height(),
                                                             Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
 
+    // Crear y agregar al jugador
+    JugadorNivel3* jugador = new JugadorNivel3();
+    jugador->setPos(emptyScene->width() / 2, emptyScene->height() / 2);
+    emptyScene->addItem(jugador);
+    QList<QGraphicsItem*> plataformas = crearPlataformasNivel3(emptyScene);
+    jugador->setPlataformas(plataformas);
+
+    jugador->setFlag(QGraphicsItem::ItemIsFocusable);
+    jugador->setFocus();
+    jugador->setScale(0.4);
+
+    EnemigoNivel3* enemigo = new EnemigoNivel3();
+    enemigo->setJugador(jugador);
+    enemigo->setPlataformas(plataformas);
+    enemigo->setPos(300, 100);
+    emptyScene->addItem(enemigo);
+    jugador->setEnemigo(enemigo);
+
+    // Crear y agregar el objeto "pala"
+    Objeto* pala = new Objeto(":/Imagenes/pala.png");
+    pala->setPos(900, 260);
+    emptyScene->addItem(pala);
+    pala->setScale(0.2);
+
+    // Crear el objeto "oso"
+    Objeto* oso = new Objeto(":/Imagenes/Oso.png");
+    oso->setPos(330, 300);
+    emptyScene->addItem(oso);
+    oso->setScale(0.07);
+
+    // Crear y agregar el objeto "almohada"
+    Objeto* almohada = new Objeto(":/Imagenes/Almohada.png");
+    almohada->setPos(400, 100);
+    emptyScene->addItem(almohada);
+    almohada->setScale(0.07);
+
+    // Agregar objetos interactivos al jugador (esto solo se hace una vez)
+    jugador->setObjetosInteractivos({pala, oso, almohada});
+
+    // Crear la imagen adicional asociada a la pala
+    QGraphicsPixmapItem* imagenAdicionalPala = new QGraphicsPixmapItem(QPixmap(":/Imagenes/letrero.png"));
+    imagenAdicionalPala->setPos(100, 0); // Posición de la imagen adicional
+    imagenAdicionalPala->setVisible(false); // Inicialmente invisible
+    emptyScene->addItem(imagenAdicionalPala);
+
+    // Crear la imagen adicional asociada al oso
+    QGraphicsPixmapItem* imagenAdicionalOso = new QGraphicsPixmapItem(QPixmap(":/Imagenes/letrero.png"));
+    imagenAdicionalOso->setPos(100, 0); // Posición de la imagen adicional
+    imagenAdicionalOso->setVisible(false); // Inicialmente invisible
+    emptyScene->addItem(imagenAdicionalOso);
+
+    // Crear la imagen adicional asociada a la almohada
+    QGraphicsPixmapItem* imagenAdicionalAlmohada = new QGraphicsPixmapItem(QPixmap(":/Imagenes/letrero.png"));
+    imagenAdicionalAlmohada->setPos(100, 0); // Posición de la imagen adicional
+    imagenAdicionalAlmohada->setVisible(false); // Inicialmente invisible
+    emptyScene->addItem(imagenAdicionalAlmohada);
+
+    // Crear un temporizador para verificar la proximidad
+    QTimer* timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, [pala, jugador, imagenAdicionalPala]() {
+        if (pala->estaCerca(jugador, 100)) {
+            if(pala->scene()){
+                pala->setRutaImagen(":/Imagenes/palaA.png"); // Imagen si el jugador está cerca
+                imagenAdicionalPala->setVisible(true);} // Mostrar imagen adicional
+        } else {
+            pala->setRutaImagen(":/Imagenes/pala (1).png"); // Imagen original
+            imagenAdicionalPala->setVisible(false); // Ocultar imagen adicional
+        }
+    });
+
+    connect(timer, &QTimer::timeout, [oso, jugador, imagenAdicionalOso]() {
+        if (oso->estaCerca(jugador, 100)) {
+            if (oso->scene()) {
+                oso->setRutaImagen(":/Imagenes/OsoD.png"); // Imagen si el jugador está cerca
+                imagenAdicionalOso->setVisible(true);} // Mostrar imagen adicional
+        } else {
+            oso->setRutaImagen(":/Imagenes/Oso.png"); // Imagen original
+            imagenAdicionalOso->setVisible(false); // Ocultar imagen adicional
+        }
+    });
+
+    connect(timer, &QTimer::timeout, [almohada, jugador, imagenAdicionalAlmohada]() {
+        if (almohada->estaCerca(jugador, 100)) {
+            if(almohada->scene()){
+                almohada->setRutaImagen(":/Imagenes/AlmohadaD.png"); // Imagen si el jugador está cerca
+                imagenAdicionalAlmohada->setVisible(true);} // Mostrar imagen adicional
+        } else {
+            almohada->setRutaImagen(":/Imagenes/Almohada.png"); // Imagen original
+            imagenAdicionalAlmohada->setVisible(false); // Ocultar imagen adicional
+        }
+    });
+
+    timer->start(50); // Verifica cada 50 ms
 }
 
+QList<QGraphicsItem*> crearPlataformasNivel3(QGraphicsScene *scene)
+{
+    QList<QGraphicsItem*> plataformas;
 
+    QGraphicsRectItem *plataforma1 = new QGraphicsRectItem(223, 25, 484, 0);
+    plataforma1->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma1);
+    plataformas.append(plataforma1);
+
+    QGraphicsRectItem *plataforma2 = new QGraphicsRectItem(223, 25, 0, 355);
+    plataforma2->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma2);
+    plataformas.append(plataforma2);
+
+    QGraphicsRectItem *plataforma3 = new QGraphicsRectItem(223, 380, 270, 0);//techo
+    plataforma3->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma3);
+    plataformas.append(plataforma3);
+
+    QGraphicsRectItem *plataforma4 = new QGraphicsRectItem(368, 380, 0, 145);
+    plataforma4->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma4);
+    plataformas.append(plataforma4);
+
+    QGraphicsRectItem *plataforma5 = new QGraphicsRectItem(707, 25, 0, 155);
+    plataforma5->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma5);
+    plataformas.append(plataforma5);
+
+    QGraphicsRectItem *plataforma6 = new QGraphicsRectItem(707, 180, 75, 0);
+    plataforma6->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma6);
+    plataformas.append(plataforma6);
+
+    QGraphicsRectItem *plataforma7 = new QGraphicsRectItem(782, 180, 0, 110);
+    plataforma7->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma7);
+    plataformas.append(plataforma7);
+
+    QGraphicsRectItem *plataforma8 = new QGraphicsRectItem(570, 360, 213, 0);
+    plataforma8->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma8);
+    plataformas.append(plataforma8);
+
+    QGraphicsRectItem *plataforma9 = new QGraphicsRectItem(570, 25, 0, 270);
+    plataforma9->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma9);
+    plataformas.append(plataforma9);
+
+    QGraphicsRectItem *plataforma10 = new QGraphicsRectItem(570, 430, 0, 100);
+    plataforma10->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma10);
+    plataformas.append(plataforma10);
+
+    QGraphicsRectItem *plataforma11 = new QGraphicsRectItem(783, 360, 0, 165);
+    plataforma11->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma11);
+    plataformas.append(plataforma11);
+
+
+    QGraphicsRectItem *plataforma12 = new QGraphicsRectItem(368, 445, 130, 0);
+    plataforma12->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma12);
+    plataformas.append(plataforma12);
+
+    QGraphicsRectItem *plataforma13 = new QGraphicsRectItem(223, 275, 275, 0);
+    plataforma13->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma13);
+    plataformas.append(plataforma13);
+
+    QGraphicsRectItem *plataforma14 = new QGraphicsRectItem(223, 180, 280, 0);
+    plataforma14->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma14);
+    plataformas.append(plataforma14);
+
+    QGraphicsRectItem *plataforma15 = new QGraphicsRectItem(633, 180, 75, 0);
+    plataforma15->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma15);
+    plataformas.append(plataforma15);
+
+    QGraphicsRectItem *plataforma16 = new QGraphicsRectItem(900, 390, 200, 0);
+    plataforma16->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma16);
+    plataformas.append(plataforma16);
+
+    QGraphicsRectItem *plataforma17 = new QGraphicsRectItem(900, 390, 0, 200);
+    plataforma17->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma17);
+    plataformas.append(plataforma17);
+
+    QGraphicsRectItem *plataforma18 = new QGraphicsRectItem(1100, 390, 0, 200);
+    plataforma18->setPen(QPen(Qt::NoPen));
+    scene->addItem(plataforma18);
+    plataformas.append(plataforma18);
+
+
+    return plataformas;
+}

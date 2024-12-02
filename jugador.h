@@ -21,12 +21,12 @@ private:
      int vidas;
     QTimer *temporizadorvidas;
      bool enEstadoDeDisparo;
+    bool puedeDisparar;
 signals:
     void vidasCambiadas(int vidas); // Señal para notificar cambio de vidas
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
-
     QVector<QPixmap> imagenesDerecha;
     QVector<QPixmap> imagenesIzquierda;
     QPixmap imagenDisparoDerecha;

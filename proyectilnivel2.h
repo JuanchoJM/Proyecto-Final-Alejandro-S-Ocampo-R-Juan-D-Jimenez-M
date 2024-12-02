@@ -19,8 +19,8 @@ private slots:
     void mover(); // Slot para mover el proyectil
 
 private:
-    QTimer *temporizador; // Temporizador para mover el proyectil
-    QString tipoProyectil; // Tipo de proyectil ("piedra" o "tronco")
+        QTimer *temporizador; // Temporizador para mover el proyectil
+        QString tipoProyectil; // Tipo de proyectil ("piedra" o "tronco")
 };
 
 #endif // PROYECTILNIVEL2_H

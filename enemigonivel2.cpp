@@ -1,6 +1,6 @@
 #include "enemigonivel2.h"
 #include <QGraphicsScene>
-#include "proyectilnivel2.h"
+
 EnemigoNivel2::EnemigoNivel2(QGraphicsItem *parent)
     : QObject(), QGraphicsPixmapItem(parent)
 {

@@ -15,7 +15,7 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
+QList<QGraphicsItem*> crearPlataformasNivel3(QGraphicsScene *scene);
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -41,6 +41,7 @@ private:
     // Métodos auxiliares
     bool verificarUsuario(const QString &usuario, const QString &contrasena);
     QList<QGraphicsItem*> crearPlataformas(QGraphicsScene *scene);
+
     QMediaPlayer *player;
     QVideoWidget *videoWidget;
     QAudioOutput *audioOutput;

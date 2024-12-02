@@ -72,7 +72,7 @@ void Enemigo::moverHaciaJugador() {
         qreal velocidadX = 5;   // Velocidad del enemigo en X
         qreal velocidadY = 0;   // Velocidad inicial en Y
 
-        if (distancia < 300.0) { // Si la distancia es considerable, realizar un salto
+        if (distancia < 800.0 && distancia >200.0) { // Si la distancia es considerable, realizar un salto
             velocidadY = -15;   // Valor de la velocidad vertical
         }
 
@@ -86,13 +86,24 @@ void Enemigo::moverHaciaJugador() {
 }
 
 void Enemigo::disparar() {
-    // Crear un proyectil
-    Proyectil* proyectil = new Proyectil(this);
-    proyectil->setPos(x() + pixmap().width() / 2 - proyectil->pixmap().width() / 2, y());
-    if (scene()) {
-        scene()->addItem(proyectil);
-    }
+    // Crear un temporizador
+    QTimer* temporizadorDisparo = new QTimer(this);
+    temporizadorDisparo->setSingleShot(true); // El temporizador se dispara solo una vez
+
+    // Conectar el temporizador a la función que va a disparar el proyectil
+    connect(temporizadorDisparo, &QTimer::timeout, this, [this]() {
+        // Crear un proyectil
+        Proyectil* proyectil = new Proyectil(this);
+        proyectil->setPos(x() + pixmap().width() / 2 - proyectil->pixmap().width() / 2, y());
+        if (scene()) {
+            scene()->addItem(proyectil);
+        }
+    });
+
+    // Iniciar el temporizador con el tiempo especificado (en milisegundos)
+    temporizadorDisparo->start(35000);  // 10000 ms = 10 segundos
 }
+
 void Enemigo::detectarColisionConProyectil() {
 
     QList<QGraphicsItem*> itemsColisionados = collidingItems();
@@ -116,7 +127,7 @@ void Enemigo::detectarColisionConProyectil() {
                     QMessageBox msgBox;
                     msgBox.setWindowTitle("Enemigo derrotado");
                     msgBox.setText("¡Has derrotado al enemigo!");
-                    msgBox.setIconPixmap(QPixmap(":/Imagenes1/corono.png")); // Imagen grande
+                    msgBox.setIconPixmap(QPixmap(":/Imagenes/corono.png")); // Imagen grande
                     msgBox.exec();
                     delete this;
                     return;

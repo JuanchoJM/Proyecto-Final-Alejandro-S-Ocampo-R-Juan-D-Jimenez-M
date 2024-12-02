@@ -6,24 +6,24 @@
 #include <QApplication>
 Jugador::Jugador(QGraphicsItem* parent)
     : QObject(), QGraphicsPixmapItem(parent),
-    vidas(5), indiceImagen(0), avanzando(true),direccionDerecha(true),
-    descendiendo(false), velocidadX(0), velocidadY(0), gravedad(1.0f),enElAire(false)
+    vidas(5), puedeDisparar(true), indiceImagen(0),avanzando(true),
+    direccionDerecha(true), descendiendo(false), velocidadX(0), velocidadY(0),gravedad(1.0f),enElAire(false)
 {
     int anchoDeseado = 60;
     int altoDeseado = 60;
 
     for (int i = 1; i <= 8; ++i) {
-        QPixmap imagen = QPixmap(QString(":Imagenes1/BartD%1.png").arg(i));
+        QPixmap imagen = QPixmap(QString(":Imagenes/BartD%1.png").arg(i));
         imagenesDerecha.append(imagen.scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     for (int i = 1; i <= 7; ++i) {
-        QPixmap imagen = QPixmap(QString(":Imagenes1/Barti%1.PNG").arg(i));
+        QPixmap imagen = QPixmap(QString(":Imagenes/BartI%1.PNG").arg(i));
         imagenesIzquierda.append(imagen.scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
-    imagenDisparoDerecha = QPixmap(":Imagenes1/BartDisparoDerecha.png").scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    imagenDisparoIzquierda = QPixmap(":Imagenes1/BartDisparoIzquierda.png").scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    imagenDisparoDerecha = QPixmap(":Imagenes/BartDisparoDerecha.png").scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    imagenDisparoIzquierda = QPixmap(":Imagenes/BartDisparoIzquierda.png").scaled(anchoDeseado, altoDeseado, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     setPixmap(imagenesDerecha[indiceImagen]);
 
     // Temporizadores
@@ -192,7 +192,7 @@ void Jugador::detectarColisionConProyectil() {
                     QMessageBox msgBox;
                     msgBox.setWindowTitle("Game Over");
                     msgBox.setText("¡Perdio mi papa!");
-                    msgBox.setIconPixmap(QPixmap(":/Imagenes1/perdio.png")); // Imagen grande
+                    msgBox.setIconPixmap(QPixmap(":/Imagenes/perdio.png")); // Imagen grande
                     msgBox.exec();
                     QApplication::quit();
                     return;
@@ -203,44 +203,52 @@ void Jugador::detectarColisionConProyectil() {
 }
 
 void Jugador::dispararPiedraIzquierda() {
-    if (!scene()) return;
+    if (!scene() || !puedeDisparar) return;
 
     // Cambiar temporalmente a la imagen de disparo
     setPixmap(imagenDisparoIzquierda);
 
     // Crear un proyectil con este jugador como propietario
     Proyectil* piedra = new Proyectil(this);
-    piedra->setPixmap(QPixmap(":/Imagenes1/PIEDRA.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    piedra->setPixmap(QPixmap(":/Imagenes/PIEDRA.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     piedra->setPos(x() - piedra->pixmap().width(), y() + pixmap().height() / 2 - piedra->pixmap().height() / 2);
     piedra->establecerDireccion(-1); // Dirección hacia la izquierda
 
     scene()->addItem(piedra);
-
+     puedeDisparar = false;
     // Restaurar la actualización de la imagen después de un pequeño retraso
     QTimer::singleShot(500, this, [this]() {
         enEstadoDeDisparo = false; // Permitir que se reanude la animación
         actualizarImagen(); // Actualizar la imagen manualmente después del disparo
     });
+    // Temporizador para permitir el siguiente disparo después de 1 segundo
+    QTimer::singleShot(500, this, [this]() {
+        puedeDisparar = true; // Después de 1 segundo, el jugador puede disparar de nuevo
+    });
 }
 
 void Jugador::dispararPiedraDerecha() {
-    if (!scene()) return;
+   if (!scene() || !puedeDisparar) return;
 
     // Cambiar temporalmente a la imagen de disparo
     setPixmap(imagenDisparoDerecha);
 
     // Crear un proyectil con este jugador como propietario
     Proyectil* piedra = new Proyectil(this);
-    piedra->setPixmap(QPixmap(":/Imagenes1/PIEDRA.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    piedra->setPixmap(QPixmap(":/Imagenes/PIEDRA.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     piedra->setPos(x() + pixmap().width(), y() + pixmap().height() / 2 - piedra->pixmap().height() / 2);
     piedra->establecerDireccion(1); // Dirección hacia la derecha
 
     scene()->addItem(piedra);
-
+    puedeDisparar = false;
     // Restaurar la actualización de la imagen después de un pequeño retraso
     QTimer::singleShot(500, this, [this]() {
         enEstadoDeDisparo = false; // Permitir que se reanude la animación
         actualizarImagen(); // Actualizar la imagen manualmente después del disparo
+    });
+    // Temporizador para permitir el siguiente disparo después de 1 segundo
+    QTimer::singleShot(500, this, [this]() {
+        puedeDisparar = true; // Después de 1 segundo, el jugador puede disparar de nuevo
     });
 }
 
